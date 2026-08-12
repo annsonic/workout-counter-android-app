@@ -1,0 +1,23 @@
+name: coach_timer
+description: "雙人輪替教練計時器，支援 Android 背景前景服務執行"
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_tts: ^4.1.0              # 文字轉語音
+  flutter_foreground_task: ^9.0.0  # 背景執行服務
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

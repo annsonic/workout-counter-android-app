@@ -121,7 +121,7 @@ class _SetupPageState extends State<SetupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E), // --bg-base
+      backgroundColor: const Color(0xFF18181B), // --bg-base
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -131,7 +131,7 @@ class _SetupPageState extends State<SetupPage> {
               constraints: const BoxConstraints(maxWidth: 420),
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: const Color(0xFF2A2A2D), // --bg-card
+                color: const Color(0xFF232326), // --bg-card
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -239,7 +239,7 @@ class _SetupPageState extends State<SetupPage> {
                           : _startApp,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(
-                          0xFF4A6880,
+                          0xFF4A6478,
                         ), // --btn-primary
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         shape: RoundedRectangleBorder(
@@ -277,85 +277,63 @@ class _SetupPageState extends State<SetupPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              flex: 5,
-              child: Text(
-                label,
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  color: Color(0xFF8A8A8E), // --color-muted
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF8A8A8E),
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Focus(
+          onFocusChange: (hasFocus) {
+            if (!hasFocus) onBlurClamp();
+          },
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFE0E0E0),
+            ),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFF2E2E32),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: hasError
+                    ? const BorderSide(color: Color(0xFFA06060), width: 2)
+                    : BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: hasError
+                      ? const Color(0xFFA06060)
+                      : const Color(0xFF7A9BB5),
+                  width: 2,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 7,
-              child: Focus(
-                onFocusChange: (hasFocus) {
-                  if (!hasFocus) onBlurClamp();
-                },
-                child: TextField(
-                  controller: controller,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFE0E0E0),
-                  ),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: const Color(0xFF3A3A3E), // --bg-input
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: hasError
-                          ? const BorderSide(color: Color(0xFFA06060), width: 2)
-                          : BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: hasError
-                            ? const Color(0xFFA06060)
-                            : const Color(0xFF7A9BB5),
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                  onChanged: onChanged,
-                ),
-              ),
-            ),
-          ],
+            onChanged: onChanged,
+          ),
         ),
         if (hasError)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Row(
-              children: [
-                const Expanded(flex: 5, child: SizedBox()),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 7,
-                  child: Text(
-                    errorText,
-                    style: const TextStyle(
-                      color: Color(0xFFC08080),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
+            child: Text(
+              errorText,
+              style: const TextStyle(color: Color(0xFFC08080), fontSize: 12),
             ),
           ),
       ],

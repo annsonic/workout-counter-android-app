@@ -112,6 +112,34 @@ class _AdjustPanelState extends State<_AdjustPanel> {
     ).toString();
   }
 
+  bool get _isWarning => _previewText.startsWith('⚠️');
+
+  Widget _buildPreviewBox() {
+    final bool warning = _isWarning;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: warning
+            ? const Color(0xFFA04030).withValues(alpha: 0.25)
+            : Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: warning
+            ? Border.all(color: const Color(0xFFA04030).withValues(alpha: 0.5), width: 1)
+            : null,
+      ),
+      child: Text(
+        _previewText,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: warning ? const Color(0xFFE08070) : const Color(0xFFB0B0B5),
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
+      ),
+    );
+  }
+
   void _apply() {
     _clampField(_roundsController, 1, 99);
     _clampField(_setsController, 1, 99);
@@ -154,7 +182,7 @@ class _AdjustPanelState extends State<_AdjustPanel> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E), // --bg-base
+      backgroundColor: const Color(0xFF18181B), // --bg-base
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -164,7 +192,7 @@ class _AdjustPanelState extends State<_AdjustPanel> {
               constraints: const BoxConstraints(maxWidth: 420),
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: const Color(0xFF2A2A2D), // --bg-card
+                color: const Color(0xFF232326), // --bg-card
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -213,30 +241,12 @@ class _AdjustPanelState extends State<_AdjustPanel> {
                     max: 9999,
                   ),
                   const SizedBox(height: 24),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _previewText,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFFB0B0B5), // --color-label
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
+                  _buildPreviewBox(),
                   const SizedBox(height: 24),
                   Row(
                     children: [
                       Expanded(
+                        flex: 2,
                         child: ElevatedButton(
                           onPressed: _cancel,
                           style: ElevatedButton.styleFrom(
@@ -261,10 +271,11 @@ class _AdjustPanelState extends State<_AdjustPanel> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
+                        flex: 3,
                         child: ElevatedButton(
                           onPressed: _apply,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4A6880),
+                            backgroundColor: const Color(0xFF4A6478),
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -303,113 +314,87 @@ class _AdjustPanelState extends State<_AdjustPanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              flex: 5,
-              child: Text(
-                label,
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  color: Color(0xFF8A8A8E), // --color-muted
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF8A8A8E),
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Focus(
+          onFocusChange: (hasFocus) {
+            if (!hasFocus) {
+              setState(() {
+                _clampField(controller, min, max);
+                if (identical(controller, _roundsController)) {
+                  _roundsError = false;
+                } else if (identical(controller, _setsController)) {
+                  _setsError = false;
+                } else if (identical(controller, _workController)) {
+                  _workError = false;
+                }
+              });
+              _updatePreview();
+            }
+          },
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFE0E0E0),
+            ),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFF2E2E32),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: hasError
+                    ? const BorderSide(color: Color(0xFFA06060), width: 2)
+                    : BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: hasError
+                      ? const Color(0xFFA06060)
+                      : const Color(0xFF7A9BB5),
+                  width: 2,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 7,
-              child: Focus(
-                onFocusChange: (hasFocus) {
-                  if (!hasFocus) {
-                    setState(() {
-                      _clampField(controller, min, max);
-                      if (identical(controller, _roundsController)) {
-                        _roundsError = false;
-                      } else if (identical(controller, _setsController)) {
-                        _setsError = false;
-                      } else if (identical(controller, _workController)) {
-                        _workError = false;
-                      }
-                    });
-                    _updatePreview();
-                  }
-                },
-                child: TextField(
-                  controller: controller,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFE0E0E0),
-                  ),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: const Color(0xFF3A3A3E), // --bg-input
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: hasError
-                          ? const BorderSide(color: Color(0xFFA06060), width: 2)
-                          : BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: hasError
-                            ? const Color(0xFFA06060)
-                            : const Color(0xFF7A9BB5),
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      final bool valid = InputValidators.isValid(
-                        value,
-                        min,
-                        max,
-                      );
-                      if (identical(controller, _roundsController)) {
-                        _roundsError = !valid;
-                      } else if (identical(controller, _setsController)) {
-                        _setsError = !valid;
-                      } else if (identical(controller, _workController)) {
-                        _workError = !valid;
-                      }
-                    });
-                    _onFieldChanged();
-                  },
-                ),
-              ),
-            ),
-          ],
+            onChanged: (value) {
+              setState(() {
+                final bool valid = InputValidators.isValid(value, min, max);
+                if (identical(controller, _roundsController)) {
+                  _roundsError = !valid;
+                } else if (identical(controller, _setsController)) {
+                  _setsError = !valid;
+                } else if (identical(controller, _workController)) {
+                  _workError = !valid;
+                }
+              });
+              _onFieldChanged();
+            },
+          ),
         ),
         if (hasError)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Row(
-              children: [
-                const Expanded(flex: 5, child: SizedBox()),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 7,
-                  child: Text(
-                    errorText,
-                    style: const TextStyle(
-                      color: Color(0xFFC08080),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
+            child: Text(
+              errorText,
+              style: const TextStyle(color: Color(0xFFC08080), fontSize: 12),
             ),
           ),
       ],

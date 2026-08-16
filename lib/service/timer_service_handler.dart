@@ -4,6 +4,7 @@ import 'dart:developer' as dev;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:vibration/vibration.dart';
 
 import '../models/timer_state.dart';
 
@@ -169,6 +170,7 @@ class TimerServiceHandler extends TaskHandler {
           unawaited(_speak(_prepPhrase()));
         } else if (remaining == 3) {
           unawaited(_speak('3'));
+          Vibration.vibrate(duration: 200); 
         } else if (remaining == 2) {
           unawaited(_speak('2'));
         } else if (remaining == 1) {
@@ -307,5 +309,6 @@ class TimerServiceHandler extends TaskHandler {
   Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
     _finishTimer?.cancel();
     await _tts.stop();
+    Vibration.cancel();
   }
 }

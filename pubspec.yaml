@@ -12,6 +12,7 @@ dependencies:
 
   flutter_tts: ^4.1.0              # 文字轉語音
   flutter_foreground_task: ^9.0.0  # 背景執行服務
+  vibration: ^3.1.3  # 振動通知
 
 dev_dependencies:
   flutter_test:

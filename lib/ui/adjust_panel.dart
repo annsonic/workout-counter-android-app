@@ -94,7 +94,7 @@ class _AdjustPanelState extends State<_AdjustPanel> {
     final int currentPhaseRemaining = st.timer;
 
     // 剩餘 units 轉換為秒數（每個 unit = PREP + WORK）
-    final int fullUnitsSeconds = (remainingUnitsFromNow - 1) * (8 + w);
+    final int fullUnitsSeconds = (remainingUnitsFromNow - 1) * (oldConfig.prepTime + w);
 
     final int totalRemaining = currentPhaseRemaining + fullUnitsSeconds;
     final String min = (totalRemaining / 60).toStringAsFixed(1);

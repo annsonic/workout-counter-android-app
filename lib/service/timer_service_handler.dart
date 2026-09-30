@@ -123,11 +123,26 @@ class TimerServiceHandler extends TaskHandler {
     }
   }
 
+  // 判斷是否為第一輪 Player 1 的初始狀態
+  bool _isFirstRoundFirstPlayer() {
+    return _state.currentRound == 1 &&
+        _state.currentSet == 1 &&
+        _state.currentPlayer == 1;
+  }
+
+  // 根據是否為第一輪 Player 1，取得適當的準備時間
+  int _getCurrentPrepTime() {
+    return _isFirstRoundFirstPlayer()
+        ? _config.initialPrepTime
+        : _config.switchPlayerPrepTime;
+  }
+
   void _startTraining() {
     _state = TimerState.initial;
-    _phaseDuration = _config.prepTime;
+    final int prepTime = _getCurrentPrepTime();
+    _phaseDuration = prepTime;
     _phaseStartTime = DateTime.now();
-    _state = _state.copyWith(timer: _config.prepTime);
+    _state = _state.copyWith(timer: prepTime);
 
     unawaited(_speak(_prepPhrase()));
     _pushState();
@@ -160,17 +175,14 @@ class TimerServiceHandler extends TaskHandler {
       _state = _state.copyWith(timer: remaining);
 
       if (prevTimer != remaining) {
-        final bool isInitialPrep =
+        // 只在非第一輪 Player 1 時，於準備階段的第 6 秒時報時
+        if (remaining == 6 &&
             _state.phase == Phase.prep &&
-            _state.currentRound == 1 &&
-            _state.currentSet == 1 &&
-            _state.currentPlayer == 1;
-
-        if (remaining == 6 && _state.phase == Phase.prep && !isInitialPrep) {
+            !_isFirstRoundFirstPlayer()) {
           unawaited(_speak(_prepPhrase()));
         } else if (remaining == 3) {
           unawaited(_speak('3'));
-          Vibration.vibrate(duration: 200); 
+          Vibration.vibrate(duration: 200);
         } else if (remaining == 2) {
           unawaited(_speak('2'));
         } else if (remaining == 1) {
@@ -195,6 +207,7 @@ class TimerServiceHandler extends TaskHandler {
       unawaited(_speak('開始'));
     } else {
       String prompt = '換人';
+      bool isStationSwitch = false;
       int round = _state.currentRound;
       int set = _state.currentSet;
       int player = _state.currentPlayer;
@@ -209,19 +222,26 @@ class TimerServiceHandler extends TaskHandler {
         set = 1;
         player = 1;
         prompt = '下一個動作';
+        isStationSwitch = true;
       } else {
         _finishTraining();
         return;
       }
+
+      final int nextPrepTime = (round == 1 && set == 1 && player == 1)
+          ? _config.initialPrepTime
+          : isStationSwitch
+          ? _config.switchStationPrepTime
+          : _config.switchPlayerPrepTime;
 
       _state = _state.copyWith(
         currentRound: round,
         currentSet: set,
         currentPlayer: player,
         phase: Phase.prep,
-        timer: _config.prepTime,
+        timer: nextPrepTime,
       );
-      _phaseDuration = _config.prepTime;
+      _phaseDuration = nextPrepTime;
       _phaseStartTime = DateTime.now();
       unawaited(_speak(prompt));
     }

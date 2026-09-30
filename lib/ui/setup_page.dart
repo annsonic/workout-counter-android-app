@@ -5,8 +5,6 @@ import '../models/timer_state.dart';
 import '../utils/input_validators.dart';
 import 'timer_page.dart';
 
-const int kPrepTime = 8;
-
 class SetupPage extends StatefulWidget {
   const SetupPage({super.key});
 
@@ -16,13 +14,13 @@ class SetupPage extends StatefulWidget {
 
 class _SetupPageState extends State<SetupPage> {
   final TextEditingController _roundsController = TextEditingController(
-    text: '5',
+    text: '${TimerConfig.defaultTimerConfig.totalRounds}',
   );
   final TextEditingController _setsController = TextEditingController(
-    text: '2',
+    text: '${TimerConfig.defaultTimerConfig.setsPerRound}',
   );
   final TextEditingController _workController = TextEditingController(
-    text: '40',
+    text: '${TimerConfig.defaultTimerConfig.workTime}',
   );
 
   bool _roundsError = false;
@@ -88,7 +86,30 @@ class _SetupPageState extends State<SetupPage> {
       return;
     }
 
-    final int totalSeconds = (kPrepTime + workTime) * 2 * sets * rounds;
+    // 三個準備秒數一律來自 TimerConfig.defaultTimerConfig，
+    // 避免在此檔重複定義常數，未來要調整只需改 timer_state.dart。
+    const TimerConfig defaults = TimerConfig.defaultTimerConfig;
+
+    final int totalWorkUnits = rounds * sets * 2;
+    final int totalWorkTime = totalWorkUnits * workTime;
+
+    // 每個 round 內：換人/換 set 的次數 = 2*sets - 1（player1↔2、set 遞增）
+    final int switchPlayerCountPerRound = 2 * sets - 1;
+    // 扣掉第一次（round1/set1/player1），那次改用 initialPrepTime
+    final int totalSwitchPlayerTime =
+        (rounds * switchPlayerCountPerRound - 1) *
+        defaults.switchPlayerPrepTime;
+
+    // round 之間換動作/器材
+    final int totalSwitchStationTime =
+        (rounds - 1) * defaults.switchStationPrepTime;
+
+    final int totalSeconds =
+        defaults.initialPrepTime +
+        totalWorkTime +
+        totalSwitchPlayerTime +
+        totalSwitchStationTime;
+
     setState(() {
       if (totalSeconds <= 60) {
         _totalTimeLabel = '總訓練時間：約 $totalSeconds 秒';
@@ -110,7 +131,8 @@ class _SetupPageState extends State<SetupPage> {
       totalRounds: rounds,
       setsPerRound: sets,
       workTime: work,
-      prepTime: kPrepTime,
+      // initialPrepTime / switchPlayerPrepTime / switchStationPrepTime
+      // 皆使用 TimerConfig 的預設值，統一由 timer_state.dart 管理。
     );
 
     Navigator.of(

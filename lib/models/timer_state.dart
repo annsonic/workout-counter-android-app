@@ -5,20 +5,50 @@ class TimerConfig {
     required this.totalRounds,
     required this.setsPerRound,
     required this.workTime,
-    this.prepTime = 8,
+    this.initialPrepTime = 8,
+    this.switchPlayerPrepTime = 20,
+    this.switchStationPrepTime = 25,
   });
 
   final int totalRounds;
   final int setsPerRound;
   final int workTime;
-  final int prepTime;
 
-  TimerConfig copyWith({int? totalRounds, int? setsPerRound, int? workTime}) {
+  // 訓練最開始（round==1 && set==1 && player==1）的準備時間。
+  // 學員已就位，等教練按下開始鍵
+  final int initialPrepTime;
+
+  // 同一個 round 內換人 / 換 set 的準備時間（同器材）
+  final int switchPlayerPrepTime;
+
+  // 換 round（換動作 / 換器材）的準備時間
+  final int switchStationPrepTime;
+
+  /// 預設設定值，作為整個 App 的唯一真相來源（Single Source of Truth）。
+  /// 任何頁面需要預設的 Rounds/Sets/WorkTime 或三個準備秒數時，
+  /// 都應該引用這裡，而不是各自定義常數。
+  static const TimerConfig defaultTimerConfig = TimerConfig(
+    totalRounds: 5,
+    setsPerRound: 2,
+    workTime: 40,
+  );
+
+  TimerConfig copyWith({
+    int? totalRounds,
+    int? setsPerRound,
+    int? workTime,
+    int? initialPrepTime,
+    int? switchPlayerPrepTime,
+    int? switchStationPrepTime,
+  }) {
     return TimerConfig(
       totalRounds: totalRounds ?? this.totalRounds,
       setsPerRound: setsPerRound ?? this.setsPerRound,
       workTime: workTime ?? this.workTime,
-      prepTime: prepTime,
+      initialPrepTime: initialPrepTime ?? this.initialPrepTime,
+      switchPlayerPrepTime: switchPlayerPrepTime ?? this.switchPlayerPrepTime,
+      switchStationPrepTime:
+          switchStationPrepTime ?? this.switchStationPrepTime,
     );
   }
 
@@ -26,14 +56,22 @@ class TimerConfig {
     'totalRounds': totalRounds,
     'setsPerRound': setsPerRound,
     'workTime': workTime,
-    'prepTime': prepTime,
+    'initialPrepTime': initialPrepTime,
+    'switchPlayerPrepTime': switchPlayerPrepTime,
+    'switchStationPrepTime': switchStationPrepTime,
   };
 
   factory TimerConfig.fromJson(Map<String, dynamic> json) => TimerConfig(
     totalRounds: json['totalRounds'],
     setsPerRound: json['setsPerRound'],
     workTime: json['workTime'],
-    prepTime: json['prepTime'] ?? 8,
+    initialPrepTime:
+        json['initialPrepTime'] ?? defaultTimerConfig.initialPrepTime,
+    switchPlayerPrepTime:
+        json['switchPlayerPrepTime'] ?? defaultTimerConfig.switchPlayerPrepTime,
+    switchStationPrepTime:
+        json['switchStationPrepTime'] ??
+        defaultTimerConfig.switchStationPrepTime,
   );
 }
 

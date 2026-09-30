@@ -93,13 +93,15 @@ class _AdjustPanelState extends State<_AdjustPanel> {
     // 當前 phase 的剩餘秒數
     final int currentPhaseRemaining = st.timer;
 
-    // 剩餘 units 轉換為秒數（每個 unit = PREP + WORK）
-    final int fullUnitsSeconds = (remainingUnitsFromNow - 1) * (oldConfig.prepTime + w);
+    // 剩餘 units 用「換人準備時間」概估（换 round 的次數相對少，此處採保守估計，
+    // 準備秒數統一沿用 oldConfig，不在此檔重複定義常數）。
+    final int fullUnitsSeconds =
+        (remainingUnitsFromNow - 1) * (oldConfig.switchPlayerPrepTime + w);
 
     final int totalRemaining = currentPhaseRemaining + fullUnitsSeconds;
     final String min = (totalRemaining / 60).toStringAsFixed(1);
 
-    setState(() => _previewText = '套用後剩餘時間約 $min 分鐘');
+    setState(() => _previewText = '套用後剩餘時間約 $min 分鐘（估算）');
   }
 
   void _onFieldChanged() => _updatePreview();
@@ -125,7 +127,10 @@ class _AdjustPanelState extends State<_AdjustPanel> {
             : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: warning
-            ? Border.all(color: const Color(0xFFA04030).withValues(alpha: 0.5), width: 1)
+            ? Border.all(
+                color: const Color(0xFFA04030).withValues(alpha: 0.5),
+                width: 1,
+              )
             : null,
       ),
       child: Text(
@@ -165,11 +170,12 @@ class _AdjustPanelState extends State<_AdjustPanel> {
 
     if (!roundsValid || !setsValid || !workValid) return;
 
-    final TimerConfig newConfig = TimerConfig(
+    // 準備秒數（initialPrepTime / switchPlayerPrepTime / switchStationPrepTime）
+    // 此面板不提供調整 UI，直接沿用舊設定，唯一真相來源仍是 TimerConfig。
+    final TimerConfig newConfig = widget.config.copyWith(
       totalRounds: int.parse(_roundsController.text),
       setsPerRound: int.parse(_setsController.text),
       workTime: int.parse(_workController.text),
-      prepTime: widget.config.prepTime,
     );
 
     Navigator.of(context).pop(newConfig);
